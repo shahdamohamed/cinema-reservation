@@ -74,7 +74,7 @@ class Payment(models.Model):
     ]
     reservation = models.ForeignKey(Reservation, on_delete=models.CASCADE, related_name='payments')
     total_price = models.FloatField()
-    payment_type = models.CharField(choices=payment_choices, default='Credit Card')
+    payment_type = models.CharField(choices=payment_choices, default='Credit Card', max_length=50)
     transaction_id = models.UUIDField (default=uuid.uuid4, editable=False, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
