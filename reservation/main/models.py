@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from user.models import User
 import uuid
 
 class Movie(models.Model):
@@ -12,12 +12,6 @@ class Movie(models.Model):
     
     def __str__(self):
         return self.title
-
-class User(AbstractUser):
-    phone = models.CharField(max_length=15, blank=True, null=True)
-
-    def __str__(self):
-        return self.username
 
 class CinemaHall(models.Model):
     hall_number = models.IntegerField(unique=True)

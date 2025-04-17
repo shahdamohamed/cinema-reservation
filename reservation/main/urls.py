@@ -12,7 +12,4 @@ router.register('reservations', views.ReservationViewSet)
 router.register('payments', views.PaymentViewSet)
 urlpatterns = [
     path('', include(router.urls)), 
-     path('signup/', SignUpView.as_view(), name='signup'),
-      path('login/', LoginView.as_view(), name='login'),
-       path('logout/', LogoutView.as_view(), name='logout'),
 ]
