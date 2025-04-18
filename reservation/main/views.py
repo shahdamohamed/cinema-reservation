@@ -5,16 +5,19 @@ from .serializers import *
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
+from rest_framework.permissions import IsAuthenticated
 # from rest_framework import status
 
 
 # to display the list of movies and their details
 class MovieViewSet(viewsets.ModelViewSet):
+    # permission_classes = [IsAuthenticated]
     queryset = Movie.objects.all()
     serializer_class = MovieSerializer
 
 # to do a reservation for specific show time and seat and check if the seat is already reserved for that show time
 class ReservationViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
     queryset = Reservation.objects.all()
     serializer_class = ReservationSerializer
 
@@ -26,6 +29,7 @@ class ReservationViewSet(viewsets.ModelViewSet):
 
 # to display the list of seats in a specific cinema hall and check if the seat is available or not
 class CinemaHallViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
     queryset = CinemaHall.objects.all()
     serializer_class = CinemaHallSerialzer
 
@@ -47,10 +51,12 @@ class CinemaHallViewSet(viewsets.ModelViewSet):
 
 # to display show times
 class ShowTimeViewset(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
     queryset = ShowTime.objects.all()
     serializer_class = ShowTimeSerializer   
 
 class PaymentViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
     queryset = Payment.objects.all()
     serializer_class = PaymentSerializer
         
