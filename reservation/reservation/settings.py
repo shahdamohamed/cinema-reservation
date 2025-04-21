@@ -128,6 +128,11 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+DEFAULT_FROM_EMAIL = 'noreply@example.com'
+
+
+# Email sent setting
 AUTH_USER_MODEL = 'user.User'
 
 EMAIL_HOST = 'sandbox.smtp.mailtrap.io'
