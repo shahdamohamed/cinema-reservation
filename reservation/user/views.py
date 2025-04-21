@@ -12,6 +12,7 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.conf import settings
+from .models import *
 
 User = get_user_model()
 
@@ -44,7 +45,7 @@ class OTPVerifyView(generics.GenericAPIView):
                 return Response({'error': 'email not found'}, status=400)
         return Response(serializer.errors, status=400)
     
-    
+
 class LogoutView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -69,20 +70,6 @@ class SendTestEmailView(APIView):
             fail_silently=False,
         )
         return Response({'message': 'Email sent successfully' })
-    
-
-# class MailVarification(APIView):
-#     def get(self, request):
-#         send_mail(
-#             subject='E-mail Varification',
-#             message='hsucj',
-#             from_email='noreply@example.com',
-#             recipient_list=['test@example.com'],
-#             fail_silently=False,
-#         )
-
-#         return Response({'message': 'Your Varification Link was Sent Check your Inbox'})
-
 
 class PasswordResetRequestView(APIView):
     def post(self, request):
