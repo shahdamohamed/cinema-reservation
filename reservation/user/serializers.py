@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
+from .utils import send_otp_mail
 import re
 
 User = get_user_model()
@@ -18,7 +19,14 @@ class RegisterSerializer(serializers.ModelSerializer):
             password=validated_data['password'],
             phone=validated_data['phone'],
         )
+        user.is_active = False
+        user.save()
+        send_otp_mail(user)
         return user
+    
+class OTPVerifySerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    code = serializers.CharField(max_length=6)
 class PasswordResetRequestSerializer(serializers.Serializer):
     email = serializers.EmailField()
 

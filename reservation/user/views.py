@@ -18,6 +18,32 @@ User = get_user_model()
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = RegisterSerializer
+
+class OTPVerifyView(generics.GenericAPIView):
+    serializer_class = OTPVerifySerializer
+    
+    def post(self, request):
+        serializer = self.get_serializer(data=request.data)
+
+        if serializer.is_valid():
+            email = serializer.validated_data['email']
+            code = serializer.validated_data['code']
+
+            try:
+                user = User.objects.get(email=email)
+                otp = OTP.objects.filter(user=user, code=code).last()
+
+                if otp and not otp.is_expired():
+                    user.is_active = True
+                    user.save()
+                    otp.delete()
+                    return Response({'message': 'تم التحقق بنجاح ✅'}, status=200)
+                else:
+                    return Response({'error': 'OTP غير صحيح أو منتهي'}, status=400)
+            except User.DoesNotExist:
+                return Response({'error': 'email not found'}, status=400)
+        return Response(serializer.errors, status=400)
+    
     
 class LogoutView(APIView):
     permission_classes = [permissions.IsAuthenticated]
