@@ -38,9 +38,9 @@ class OTPVerifyView(generics.GenericAPIView):
                     user.is_active = True
                     user.save()
                     otp.delete()
-                    return Response({'message': 'تم التحقق بنجاح ✅'}, status=200)
+                    return Response({'message': 'check your email'}, status=200)
                 else:
-                    return Response({'error': 'OTP غير صحيح أو منتهي'}, status=400)
+                    return Response({'error': 'uncorrect  OTP'}, status=400)
             except User.DoesNotExist:
                 return Response({'error': 'email not found'}, status=400)
         return Response(serializer.errors, status=400)
