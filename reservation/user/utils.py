@@ -16,14 +16,3 @@ def send_otp_mail(user):
         recipient_list=[user.email],
         fail_silently=False,
     )
-
-def send_reset_password_mail(user):
-    code = generate_otp()
-    OTPModel.objects.create(user=user, code=code)
-    send_mail(
-        subject='Reset your Password OTP',
-        message=f'your OTP is {code}',
-        from_email=settings.EMAIL_HOST_USER,
-        recipient_list=[user.email],
-        fail_silently=False,
-    )

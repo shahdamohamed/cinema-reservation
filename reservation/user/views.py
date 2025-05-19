@@ -63,7 +63,7 @@ class ForgetPasswordView(APIView):
             serializer = self.serializer_class(data=request.data)
             serializer.is_valid(raise_exception=True)
             user = get_object_or_404(User, email=serializer.validated_data['email'])
-            send_reset_password_mail(user)
+            send_otp_mail(user)
             return Response({'message': 'OTP sent Successfully to the email.'}, status=status.HTTP_200_OK)
 
 class ResendOTPView(APIView):
