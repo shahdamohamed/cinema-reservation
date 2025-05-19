@@ -6,12 +6,15 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
-# from rest_framework import status
+from django.conf import settings
+from django.http import JsonResponse
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated, AllowAny
 
 
 # to display the list of movies and their details
 class MovieViewSet(viewsets.ModelViewSet):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     queryset = Movie.objects.all()
     serializer_class = MovieSerializer
 
@@ -24,7 +27,8 @@ class ReservationViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         seat = serializer.validated_data['seat']
         show_time = serializer.validated_data['show_time']
-        raise ValidationError('This seat is already reserved for this show time.')
+        if Reservation.objects.filter(seat=seat, show_time=show_time).exists():
+            raise ValidationError('This seat is already reserved for this show time.')
         serializer.save(user=self.request.user)
 
 # to display the list of seats in a specific cinema hall and check if the seat is available or not
@@ -51,12 +55,6 @@ class CinemaHallViewSet(viewsets.ModelViewSet):
 
 # to display show times
 class ShowTimeViewset(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated]
+    Permission_classes = [AllowAny]
     queryset = ShowTime.objects.all()
     serializer_class = ShowTimeSerializer   
-
-class PaymentViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated]
-    queryset = Payment.objects.all()
-    serializer_class = PaymentSerializer
-        

@@ -9,7 +9,7 @@ router.register('movies', views.MovieViewSet)
 router.register('cinema_halls', views.CinemaHallViewSet)
 router.register('show_times', views.ShowTimeViewset)
 router.register('reservations', views.ReservationViewSet)
-router.register('payments', views.PaymentViewSet)
+# router.register('payments', views.PaymentViewSet)
 urlpatterns = [
     path('', include(router.urls)), 
 ]

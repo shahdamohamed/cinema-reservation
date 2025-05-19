@@ -10,11 +10,13 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'password', 'phone']
+        fields = ['username', 'first_name', 'last_name',  'email', 'password', 'phone']
 
     def create(self, validated_data):
         user = User.objects.create_user(
             username=validated_data['username'],
+            first_name=validated_data['first_name'],
+            last_name=validated_data['last_name'],
             email=validated_data['email'],
             password=validated_data['password'],
             phone=validated_data['phone'],
@@ -23,28 +25,17 @@ class RegisterSerializer(serializers.ModelSerializer):
         user.save()
         send_otp_mail(user)
         return user
+
+class ResendOTPSerializer(serializers.Serializer):
+    email = serializers.EmailField()
     
 class OTPVerifySerializer(serializers.Serializer):
     email = serializers.EmailField()
     code = serializers.CharField(max_length=6)
-class PasswordResetRequestSerializer(serializers.Serializer):
+
+class ForgetPasswordSerializer(serializers.Serializer):
     email = serializers.EmailField()
 
-    def validate_email(self, value):
-        if not User.objects.filter(email=value).exists():
-            raise serializers.ValidationError('No user with this email')
-        return value
-
-class PasswordResetConfirmSerializer(serializers.Serializer):
-    uid = serializers.CharField()
-    token = serializers.CharField()
-    new_password = serializers.CharField(min_length=8)
-
-    def validate_new_password(self, value):
-        if not re.search(r'[A-Z]', value):
-            raise serializers.ValidationError("Password must contain at least one uppercase letter.")
-        if not re.search(r'[0-9]', value):
-            raise serializers.ValidationError("Password must contain at least one digit.")
-        if not re.search(r'[\W_]', value):
-            raise serializers.ValidationError("Password must contain at least one special character.")
-        return value
+class ResetPasswordSerialzer(serializers.Serializer):
+    email = serializers.EmailField()
+    new_password = serializers.CharField(write_only=True)

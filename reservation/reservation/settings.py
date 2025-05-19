@@ -37,6 +37,9 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ],
 }
 
 SIMPLE_JWT = {
@@ -45,6 +48,14 @@ SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': False,
     'BLACKLIST_AFTER_ROTATION': True,
 }
+
+# Email settings
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST_USER = "myemail@gmail.com"
+EMAIL_HOST_PASSWORD = "password"
+EMAIL_PORT = 465  # SMTP port
+EMAIL_USE_SSL = True  # for secure connection
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -128,17 +139,4 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-DEFAULT_FROM_EMAIL = 'noreply@example.com'
-
-
-# Email sent setting from mailtrap
 AUTH_USER_MODEL = 'user.User'
-
-# EMAIL_HOST = 'sandbox.smtp.mailtrap.io'
-
-# EMAIL_HOST_USER = '0f2c215cf1070c'
-
-# EMAIL_HOST_PASSWORD = '****6323'
-
-# EMAIL_PORT = '2525'

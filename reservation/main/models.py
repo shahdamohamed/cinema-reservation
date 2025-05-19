@@ -73,4 +73,3 @@ class Payment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return  f"Reservation {self.reservation.id} - {self.total_price} - {self.payment_type}"
-
