@@ -6,10 +6,11 @@ from . import views
 
 router = DefaultRouter()
 router.register('movies', views.MovieViewSet)
-router.register('cinema_halls', views.CinemaHallViewSet)
 router.register('show_times', views.ShowTimeViewset)
+router.register('seats', views.SeatViewSet)
 # router.register('payments', views.PaymentViewSet)
 urlpatterns = [
     path('', include(router.urls)),
     path('reservation/', ReservationView.as_view(), name='reservation'),
+    path('available-seats/', views.SeatsInHallView.as_view(), name='available-seats'),
 ]

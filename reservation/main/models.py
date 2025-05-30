@@ -20,7 +20,25 @@ class CinemaHall(models.Model):
     def __str__(self):
         return f'hall {self.hall_number}'
 
+class Seat(models.Model):
+    # show_time = models.ManyToManyField(ShowTime, related_name='show_times')
+    hall = models.ForeignKey(CinemaHall, on_delete=models.CASCADE, related_name='seats')
+    seat_number = models.IntegerField(
+        validators=[
+            MinValueValidator(1),
+            MaxValueValidator(60)
+        ]
+    )
+    seat_type_choices = [
+        ('Standard', 'Standard'),
+        ('VIP', 'VIP'),
+    ]
+    seat_type = models.CharField(choices=seat_type_choices, default='Standard')
+    def __str__(self):
+        return f"seat {self.seat_number} in hall {self.hall.hall_number}"
+
 class ShowTime(models.Model):
+    seat = models.ManyToManyField(Seat, related_name='show_times')
     movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name='show_times')
     hall = models.ForeignKey(CinemaHall, on_delete=models.CASCADE, related_name='show_times')
     start_time = models.DateTimeField()
@@ -30,28 +48,12 @@ class ShowTime(models.Model):
     def __str__(self):
         return f'{self.movie} - {self.start_time} - {self.hall}'
 
-class Seat(models.Model):
-    hall = models.ForeignKey(CinemaHall, on_delete=models.CASCADE, related_name='seats')
-    seat_number = models.IntegerField(
-        validators=[
-            MinValueValidator(1),
-            MaxValueValidator(60)
-        ]
-    )
-    is_available = models.BooleanField(default=True)
-    seat_type_choices = [
-        ('Standard', 'Standard'),
-        ('VIP', 'VIP'),
-    ]
-    seat_type = models.CharField(choices=seat_type_choices, default='Standard')
-    def __str__(self):
-        return f"seat {self.seat_number} in hall {self.hall.hall_number}"
-
-
 class Reservation(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reservations')
     show_time = models.ForeignKey(ShowTime, on_delete=models.CASCADE, related_name='reservations')
     seat = models.ManyToManyField(Seat, related_name='reservations')
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_paid = models.BooleanField(default=False)
     is_confirmed = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     price = models.FloatField(default=125)

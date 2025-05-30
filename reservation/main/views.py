@@ -1,5 +1,4 @@
 from logging import exception
-
 from django.db.migrations import serializer
 from django.shortcuts import render, get_object_or_404
 from rest_framework import viewsets
@@ -28,6 +27,10 @@ class ShowTimeViewset(viewsets.ModelViewSet):
     queryset = ShowTime.objects.all()
     serializer_class = ShowTimeSerializer
 
+class SeatViewSet(viewsets.ModelViewSet):
+    permission_classes = [AllowAny]
+    queryset = Seat.objects.all()
+    serializer_class = SeatSerializer
 # create a reservation endpoint
 class ReservationView(APIView):
     permission_classes = [IsAuthenticated]
@@ -45,13 +48,10 @@ class ReservationView(APIView):
             seat = get_object_or_404(Seat, id = seat_id)
 
             # make sure this seat is available
-            if not seat.is_available:
-                return Response({'error': "this seat is not available"})
-            else:
-                seat.is_available = False
-                seat.save()
+            if Reservation.objects.filter(show_time=show_time, seat=seat).exists():
+                return Response({"error": "This seat is already reserved for the selected show time."}, status=400)
 
-            # calculate the price of the seat based on the the seat type
+            # calculate the price of the seat based on the seat type
             if seat.seat_type == 'Standard':
                 price = show_time.price
             else:
@@ -70,28 +70,23 @@ class ReservationView(APIView):
         serializer = ReservationSerializer(reservation)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-
-
-
-
-# to display the list of seats in a specific cinema hall and check if the seat is available or not
-class CinemaHallViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated]
-    queryset = CinemaHall.objects.all()
-    serializer_class = CinemaHallSerialzer
-    @action(detail=True, methods=['get'])
-    def available_seats(self, request, Pk=None):
-        hall = self.get_abject()
-        show_time_id = request.query_params.get('show_time')
-        if not show_time_id:
-            return Response({'error':'show_time is required parameter'}, status=400)
-        try:
-            show_time = ShowTime.objects.get(id=show_time_id)
-        except :
-            return Response({'error':'show_time not found'}, status=404)
-        reserved_seats_id = Reservation.objects.filter(show_time=show_time, status='Confirmed').values_list('seat', flat=True)
-        available_seats = Seat.objects.filter(hall=hall).exclude(id__in=reserved_seats_id)
+# to display the list of seats who is available in a specific show time
+class SeatsInHallView(APIView):
+    permission_classes = [AllowAny]
+    def get(self, request, *args, **kwargs):
+        show_time_id = request.data.get('showtime')
+        show_time = get_object_or_404(ShowTime, id = show_time_id)
+        # get all seats
+        seats = show_time.seat.all()
+        available_seats = []
+        unavailable_seats = []
+        for seat in seats :
+            if Reservation.objects.filter(show_time=show_time, seat=seat).exists():
+                unavailable_seats.append(seat)
+            else:
+                available_seats.append(seat)
         serializer = SeatSerializer(available_seats, many=True)
-        return Response(serializer.data)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 
