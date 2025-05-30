@@ -1,3 +1,4 @@
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from user.models import User
 import uuid
@@ -15,50 +16,47 @@ class Movie(models.Model):
 
 class CinemaHall(models.Model):
     hall_number = models.IntegerField(unique=True)
-    seats_amount = models.IntegerField()
-    created_at = models.DateTimeField(auto_now_add=True)
+    seats_amount = models.IntegerField(default=60)
     def __str__(self):
-        return f'hall {self.hall_number} - {self.hall_type}'
+        return f'hall {self.hall_number}'
 
 class ShowTime(models.Model):
     movie = models.ForeignKey(Movie, on_delete=models.CASCADE, related_name='show_times')
     hall = models.ForeignKey(CinemaHall, on_delete=models.CASCADE, related_name='show_times')
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
-    price = models.FloatField()
-    created_at = models.DateTimeField(auto_now_add=True) # Entry creation time
+    price = models.FloatField(default=125.0)
+    created_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return f'{self.movie} - {self.start_time} - {self.hall}'
 
 class Seat(models.Model):
     hall = models.ForeignKey(CinemaHall, on_delete=models.CASCADE, related_name='seats')
-    seat_number = models.CharField(max_length=10)
-    def is_available(self):
-        return not Reservation.objects.filter(seat=self, status="Confirmed").exists()
+    seat_number = models.IntegerField(
+        validators=[
+            MinValueValidator(1),
+            MaxValueValidator(60)
+        ]
+    )
+    is_available = models.BooleanField(default=True)
     seat_type_choices = [
         ('Standard', 'Standard'),
         ('VIP', 'VIP'),
     ]
-    seat_type = models.CharField(choices=seat_type_choices, default='Standard', max_length=100)
-    seat_price = models.FloatField()
-    created_at = models.DateTimeField(auto_now_add=True)
+    seat_type = models.CharField(choices=seat_type_choices, default='Standard')
     def __str__(self):
-        return f"hall {self.hall.hall_number} - seat {self.seat_number}"
+        return f"seat {self.seat_number} in hall {self.hall.hall_number}"
 
 
 class Reservation(models.Model):
-    status_choices = [
-        ('Pending', 'Pending'),
-        ('Confirmed', ' Confirmed'),
-        ('Cancelled', 'Cancelled'),
-    ]
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reservations')
     show_time = models.ForeignKey(ShowTime, on_delete=models.CASCADE, related_name='reservations')
     seat = models.ForeignKey(Seat, on_delete=models.CASCADE, related_name='reservations')
-    status = models.CharField(choices=status_choices, default='Pending', max_length=10)
+    is_confirmed = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
+    price = models.FloatField(default=125)
     def __str__(self):
-        return f"{self.user.username} - {self.show_time.movie.title} - seat {self.seat.seat_number}"
+        return f"{self.user.username}"
 
 class Payment(models.Model):
     payment_choices = [

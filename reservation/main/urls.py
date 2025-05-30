@@ -8,8 +8,8 @@ router = DefaultRouter()
 router.register('movies', views.MovieViewSet)
 router.register('cinema_halls', views.CinemaHallViewSet)
 router.register('show_times', views.ShowTimeViewset)
-router.register('reservations', views.ReservationViewSet)
 # router.register('payments', views.PaymentViewSet)
 urlpatterns = [
-    path('', include(router.urls)), 
+    path('', include(router.urls)),
+    path('reservation/', ReservationView.as_view(), name='reservation'),
 ]

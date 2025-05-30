@@ -12,15 +12,17 @@ class ShowTimeSerializer(serializers.ModelSerializer):
         model = ShowTime
         fields = '__all__'
 
-class ReservationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Reservation
-        fields = '__all__'
-
 class SeatSerializer(serializers.ModelSerializer):
     class Meta:
         model = Seat
         fields = '__all__'
+
+class ReservationSerializer(serializers.ModelSerializer):
+    seats = SeatSerializer(many=True)
+    class Meta:
+        model = Reservation
+        fields = '__all__'
+
 class CinemaHallSerialzer(serializers.ModelSerializer):
     class Meta:
         model = CinemaHall
