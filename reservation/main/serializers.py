@@ -18,7 +18,6 @@ class SeatSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class ReservationSerializer(serializers.ModelSerializer):
-    seats = SeatSerializer(many=True)
     class Meta:
         model = Reservation
         fields = '__all__'

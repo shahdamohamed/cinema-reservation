@@ -51,7 +51,7 @@ class Seat(models.Model):
 class Reservation(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reservations')
     show_time = models.ForeignKey(ShowTime, on_delete=models.CASCADE, related_name='reservations')
-    seat = models.ForeignKey(Seat, on_delete=models.CASCADE, related_name='reservations')
+    seat = models.ManyToManyField(Seat, related_name='reservations')
     is_confirmed = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     price = models.FloatField(default=125)

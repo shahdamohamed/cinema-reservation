@@ -4,7 +4,6 @@ from django.db.migrations import serializer
 from django.shortcuts import render, get_object_or_404
 from rest_framework import viewsets
 from rest_framework.views import APIView
-
 from .models import  *
 from .serializers import *
 from rest_framework.decorators import action
@@ -36,40 +35,45 @@ class ReservationView(APIView):
     def post(self, request, *args, **kwargs):
         user = self.request.user
         show_time_id = request.data.get('showtime')
-        seat_id = request.data.get('seat')
+        seat_ids = request.data.get('seat')
 
-        #fetch showtime and seat from database
-        show_time = get_object_or_404(ShowTime, id=show_time_id)
+        # fetch data from request body
+        show_time = get_object_or_404(ShowTime, id = show_time_id)
+        seats = []
+        total_price = 0
+        for seat_id in seat_ids:
+            seat = get_object_or_404(Seat, id = seat_id)
 
-        seat = get_object_or_404(Seat, id=seat_id)
+            # make sure this seat is available
+            if not seat.is_available:
+                return Response({'error': "this seat is not available"})
+            else:
+                seat.is_available = False
+                seat.save()
 
-        #check if seat is reserved for ather showtimes
-        if Reservation.objects.filter(show_time=show_time, seat=seat).exists():
-            return Response({'error': 'this seat is already reserved for this show time'}, status=status.HTTP_400_BAD_REQUEST)
+            # calculate the price of the seat based on the the seat type
+            if seat.seat_type == 'Standard':
+                price = show_time.price
+            else:
+                price = show_time.price + 60
 
-        #check if seat is available
-        if seat.is_available:
-            seat.is_available = False
-            seat.save()
-        else:
-            return Response({'error': 'This seat is not available.'}, status=status.HTTP_400_BAD_REQUEST)
+            seats.append(seat) # add the seat to seats array
+            total_price += price # add price od=f that seat to the total price
 
-
-        #calculate the price based on seat type
-        if seat.seat_type == 'Standard':
-            price = show_time.price
-        else:
-            price = show_time.price + 60
-
-        #create one reservation
+        # create a reservation
         reservation = Reservation.objects.create(
             user=user,
             show_time=show_time,
-            seat=seat,
-            price=price
+            price=total_price
         )
+        reservation.seat.set(seats)
         serializer = ReservationSerializer(reservation)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+
+
+
 # to display the list of seats in a specific cinema hall and check if the seat is available or not
 class CinemaHallViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
