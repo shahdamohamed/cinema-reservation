@@ -1,6 +1,5 @@
 from rest_framework import serializers
-from .models import Movie, ShowTime, Reservation, Seat, User, CinemaHall
-from rest_framework_simplejwt.tokens import RefreshToken
+from .models import Movie, ShowTime, Reservation, Seat, CinemaHall, PurchaseHistory
 
 class MovieSerializer(serializers.ModelSerializer):
     class Meta:
@@ -27,3 +26,7 @@ class CinemaHallSerialzer(serializers.ModelSerializer):
         model = CinemaHall
         fields = '__all__'
 
+class PurchaseHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PurchaseHistory
+        fields = '__all__'

@@ -1,8 +1,3 @@
-from locale import currency
-from logging import exception
-from urllib import request
-
-from django.db.migrations import serializer
 from django.shortcuts import render, get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
@@ -10,36 +5,62 @@ from rest_framework import viewsets
 from rest_framework.views import APIView
 from .models import  *
 from .serializers import *
-from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.exceptions import ValidationError
-from rest_framework.permissions import IsAuthenticated
 from django.conf import settings
-from django.http import JsonResponse, HttpResponse
+from django.http import HttpResponse
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 import stripe
 
-# to display the list of movies and their details
 class MovieViewSet(viewsets.ModelViewSet):
     permission_classes = [AllowAny]
     queryset = Movie.objects.all()
     serializer_class = MovieSerializer
 
-# to display show times
 class ShowTimeViewset(viewsets.ModelViewSet):
     Permission_classes = [AllowAny]
     queryset = ShowTime.objects.all()
     serializer_class = ShowTimeSerializer
 
+# get showtime for specific movie
+class ShowTimeMovie(APIView):
+    permission_classes = [AllowAny]
+    def get(self, request, movie_id):
+        if not movie_id:
+            return Response({'error': 'Movie ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+        movie = get_object_or_404(Movie, id=movie_id)
+        show_time = get_object_or_404(ShowTime, movie=movie)
+        serializer = ShowTimeSerializer(show_time)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 class SeatViewSet(viewsets.ModelViewSet):
     permission_classes = [AllowAny]
     queryset = Seat.objects.all()
     serializer_class = SeatSerializer
-# create a reservation endpoint
+
 class ReservationView(APIView):
     permission_classes = [IsAuthenticated]
-
+    # cancel a reservation
+    def delete(self, reservation_id):
+        if not reservation_id:
+            return Response({'error': 'Reservation ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+        reservation = get_object_or_404(Reservation, id=reservation_id)
+        reservation.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    # get reservation details
+    def get(self, request, reservation_id):
+        if not reservation_id:
+            return Response({'error': 'Reservation ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+        reservation = get_object_or_404(Reservation, id=reservation_id)
+        serializer = ReservationSerializer(reservation)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    # list user reservations
+    def get(self, request):
+        user = request.user
+        reservation = get_object_or_404(Reservation, user=user)
+        serializer = ReservationSerializer(reservation)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    # create a reservation endpoint
     def post(self, request, *args, **kwargs):
         user = self.request.user
         show_time_id = request.data.get('showtime')
@@ -75,7 +96,7 @@ class ReservationView(APIView):
         serializer = ReservationSerializer(reservation)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-# to display the list of seats who is available in a specific show time
+# to display the list of seats who is available in a specific show-time
 class SeatsInHallView(APIView):
     permission_classes = [AllowAny]
     def get(self, request, *args, **kwargs):
@@ -95,8 +116,7 @@ class SeatsInHallView(APIView):
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 class CreateCheckoutSessionView(APIView):
-    # permission_classes = [IsAuthenticated]
-
+    permission_classes = [IsAuthenticated]
     def post(self, request,reservation_id):
         reservation = get_object_or_404(Reservation, id=reservation_id)
         try:
@@ -168,17 +188,11 @@ class StripeWebhookView(APIView):
 
         return HttpResponse(status=200)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+class PaymentStatusView(APIView):
+    def get(self, request, reservation_id):
+        if not reservation_id:
+            return Response({'error': 'Reservation ID is required'}, status=status.HTTP_400_BAD_REQUEST)
+        payment = get_object_or_404(PurchaseHistory, reservation=reservation_id)
+        serializer = PurchaseHistorySerializer(payment)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 

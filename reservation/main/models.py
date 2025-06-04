@@ -1,7 +1,6 @@
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from user.models import User
-import uuid
 
 class Movie(models.Model):
     title = models.CharField(max_length=100)
@@ -21,7 +20,6 @@ class CinemaHall(models.Model):
         return f'hall {self.hall_number}'
 
 class Seat(models.Model):
-    # show_time = models.ManyToManyField(ShowTime, related_name='show_times')
     hall = models.ForeignKey(CinemaHall, on_delete=models.CASCADE, related_name='seats')
     seat_number = models.IntegerField(
         validators=[
