@@ -15,7 +15,7 @@ SECRET_KEY = 'django-insecure-*7ihma&wv%!6pw=8@(t5^dx*5&hov&s(t)d6&j4*%+^(a@%gzk
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -51,12 +51,18 @@ SIMPLE_JWT = {
 }
 
 # Email settings
+from decouple import config
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_HOST_USER = "myemail@gmail.com"
-EMAIL_HOST_PASSWORD = "password"
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 EMAIL_PORT = 465  # SMTP port
 EMAIL_USE_SSL = True  # for secure connection
+
+# stripe API integration setting
+STRIPE_SECRET_KEY = config('STRIPE_SECRET_KEY')
+STRIPE_PUBLISHABLE_KEY = config('STRIPE_PUBLISHABLE_KEY')
+STRIPE_WEBHOOK_SECRET = config('STRIPE_WEBHOOK_SECRET')
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -141,7 +147,3 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'user.User'
-
-# payment setting
-STRIPE_SECRET_KEY = ""
-STRIPE_PUBLISHABLE_KEY = ""

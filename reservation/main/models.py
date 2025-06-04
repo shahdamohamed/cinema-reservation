@@ -54,22 +54,15 @@ class Reservation(models.Model):
     seat = models.ManyToManyField(Seat, related_name='reservations')
     created_at = models.DateTimeField(auto_now_add=True)
     is_paid = models.BooleanField(default=False)
-    is_confirmed = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     price = models.FloatField(default=125)
     def __str__(self):
         return f"{self.user.username}"
 
-class Payment(models.Model):
-    payment_choices = [
-        ('Credit Card', 'Credit Card'),
-        ('Cash', 'Cash'),
-        ('PayPal', 'PayPal'),
-    ]
-    reservation = models.ForeignKey(Reservation, on_delete=models.CASCADE, related_name='payments')
-    total_price = models.FloatField()
-    payment_type = models.CharField(choices=payment_choices, default='Credit Card', max_length=50)
-    transaction_id = models.UUIDField (default=uuid.uuid4, editable=False, unique=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+class PurchaseHistory(models.Model):
+    reservation = models.ForeignKey(Reservation, on_delete=models.CASCADE, related_name='purchase_history')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='purchase_history')
+    is_succeeded = models.BooleanField(default=False)
+
     def __str__(self):
-        return  f"Reservation {self.reservation.id} - {self.total_price} - {self.payment_type}"
+        return self.user.username

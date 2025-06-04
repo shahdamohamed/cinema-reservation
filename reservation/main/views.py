@@ -1,6 +1,11 @@
+from locale import currency
 from logging import exception
+from urllib import request
+
 from django.db.migrations import serializer
 from django.shortcuts import render, get_object_or_404
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework import viewsets
 from rest_framework.views import APIView
 from .models import  *
@@ -10,10 +15,10 @@ from rest_framework.response import Response
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from django.conf import settings
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
-
+import stripe
 
 # to display the list of movies and their details
 class MovieViewSet(viewsets.ModelViewSet):
@@ -87,6 +92,93 @@ class SeatsInHallView(APIView):
                 available_seats.append(seat)
         serializer = SeatSerializer(available_seats, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+stripe.api_key = settings.STRIPE_SECRET_KEY
+class CreateCheckoutSessionView(APIView):
+    # permission_classes = [IsAuthenticated]
+
+    def post(self, request,reservation_id):
+        reservation = get_object_or_404(Reservation, id=reservation_id)
+        try:
+            checkout_session = stripe.checkout.Session.create(
+                payment_method_types=["card"],
+                metadata={
+                    'reservation_id' : str(reservation_id),
+                    'user_email' : reservation.user.email
+                },
+                mode='payment',
+                success_url='http://localhost:8000/payment/success/',
+                cancel_url='http://localhost:8000/payment/cancel/',
+                line_items=[
+                    {
+                        'price_data': {
+                            'currency': 'usd',
+                            'product_data': {
+                                'name': f'Seat Reservation for ShowTime {reservation.show_time.id}',
+                            },
+                            'unit_amount': int(reservation.price * 100),  # in cents
+                        },
+                        'quantity': 1,
+                    },
+                ],
+            )
+
+            return Response({'checkout_url': checkout_session.url})
+
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+def payment_success(request):
+    return HttpResponse('payment completed successfully! ✅')
+
+def payment_cancel(request):
+    return HttpResponse('payment  Canceled ❎')
+@method_decorator(csrf_exempt, name='dispatch')
+class StripeWebhookView(APIView):
+    def post(self, request):
+        payload = request.body
+        sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
+        endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
+        try:
+            event = stripe.Webhook.construct_event(
+                payload, sig_header, endpoint_secret
+            )
+        except ValueError as e:
+            return HttpResponse(status=400)
+        except stripe.error.SignatureVerificationError as e:
+            return HttpResponse(status=400)
+
+        session = event['data']['object']
+        if event['type'] == 'checkout.session.completed':
+            reservation_id = session['metadata']['reservation_id']
+            user_email = session['metadata']['user_email']
+            product = Reservation.objects.filter(id=reservation_id).first()
+            user = User.objects.get(email=user_email)
+            PurchaseHistory.objects.create(reservation=product, is_succeeded=True, user=user)
+            reservation = get_object_or_404(Reservation, user=user)
+            reservation.is_paid = True
+            reservation.save()
+
+        elif event['type'] == 'checkout.session.async_payment_failed':
+            product_id = session['metadata']['product_id']
+            user_email = session['metadata']['user_email']
+            product = Reservation.objects.get(id=product_id)
+            user = User.objects.get(email=user_email)
+            PurchaseHistory.objects.create(reservation=product, is_succeeded=False, user=user)
+
+        return HttpResponse(status=200)
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
