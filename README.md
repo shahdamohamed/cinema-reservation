@@ -45,11 +45,9 @@ python manage.py runserver
 
 | Method | Endpoint                          | Description                                  |
 |--------|-----------------------------------|----------------------------------------------|
-| POST   | `/api/register/`                  | User registration                            |
-| POST   | `/api/resend-otp/`                | Resend OTP for account verification          |
-| POST   | `/api/verify-account-otp/`        | Verify account using OTP                     |
-| POST   | `/api/forget-password/`           | Request password reset OTP                   |
-| POST   | `/api/verify-reset-password-otp/` | Verify OTP for password reset                |
+| POST   | `/api/users/register/`            | User registration                            |
+| POST   | `/api/users/generate_otp/`        | Generating OTP                               |
+| POST   | `/api/users/verify_otp/`          | Verify OTP                                   |
 | POST   | `/api/reset-password/`            | Reset the user password                      |
 | POST   | `/api/token/`                     | Obtain JWT tokens (login)                    |
 | POST   | `/api/token/refresh/`             | Refresh JWT access token                     |
