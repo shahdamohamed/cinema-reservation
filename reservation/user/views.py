@@ -64,7 +64,7 @@ class RegisterView(APIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data['user_id']
         get_object_or_404(User, id=user_id)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 # change password after verification
 class ResetPasswordView(APIView):

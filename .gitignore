@@ -1,10 +1,63 @@
-.venv
-.env
-.idea
-
+# =========================
+# Python
+# =========================
 __pycache__/
 *.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.egg-info/
+.eggs/
 
+# =========================
+# Virtual Environments
+# =========================
+.venv/
+
+
+# =========================
+# Environment variables
+# =========================
+.env
+
+
+# =========================
+# Django
+# =========================
+*.log
+local_settings.py
 db.sqlite3
 media/
 staticfiles/
+
+# Migrations cache
+**/migrations/__pycache__/
+
+# =========================
+# IDE / Editor
+# =========================
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# =========================
+# OS files
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Testing / Coverage
+# =========================
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+
+# =========================
+# Build / Deployment
+# =========================
+dist/
+build/
+*.spec
